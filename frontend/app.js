@@ -198,19 +198,32 @@ async function getRecommendations() {
 getRecosBtn.addEventListener('click', getRecommendations);
 
 function renderResults(restaurants) {
-    resultsGrid.innerHTML = restaurants.map(r => `
-        <div class="restaurant-card">
-            <h3 class="resto-name">${r.name}</h3>
-            <p class="resto-meta">${r.location.charAt(0).toUpperCase() + r.location.slice(1)}</p>
-            <div class="resto-tags">
-                <span class="resto-cuisine">${r.cuisine.charAt(0).toUpperCase() + r.cuisine.slice(1)}</span>
-                <span class="resto-rating">${r.rating.toFixed(1)} ★</span>
+    resultsGrid.innerHTML = restaurants.map(r => {
+        const fullStars = Math.floor(r.rating);
+        const hasHalf = r.rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+
+        let starsHtml = '<span class="star-filled">' + '★'.repeat(fullStars) + '</span>';
+        if (hasHalf) starsHtml += '<span class="star-filled">★</span>'; // Simplified for now
+        starsHtml += '<span class="star-empty">' + '★'.repeat(emptyStars) + '</span>';
+
+        return `
+            <div class="restaurant-card">
+                <h3 class="resto-name">${r.name}</h3>
+                <p class="resto-meta">${r.location.charAt(0).toUpperCase() + r.location.slice(1)}</p>
+                <div class="resto-tags">
+                    <span class="resto-cuisine">${r.cuisine.charAt(0).toUpperCase() + r.cuisine.slice(1)}</span>
+                    <div class="resto-rating">
+                        <div class="stars">${starsHtml}</div>
+                        <span>${r.rating.toFixed(1)}</span>
+                    </div>
+                </div>
+                <div style="margin-top: 12px; font-size: 0.875rem; color: #FFAB40;">
+                    ${r.price_tier}
+                </div>
             </div>
-            <div style="margin-top: 12px; font-size: 0.875rem; color: #FFAB40;">
-                ${r.price_tier}
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderBanners() {
