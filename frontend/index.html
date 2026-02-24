@@ -66,33 +66,44 @@
             <header class="app-header">
                 <div class="container header-content">
                     <h1 class="logo">Zomato AI<span> Recommendor</span></h1>
-                    <div class="voice-controls">
-                        <div id="voice-trigger" class="voice-btn" title="Speak your command">
-                            <i class="fas fa-microphone"></i>
-                            <span class="btn-glow"></span>
-                        </div>
-                        <div id="live-transcript" class="live-transcript"></div>
-                    </div>
                     <button id="logout-btn" class="btn btn-outline btn-sm">Logout</button>
                 </div>
             </header>
 
-            <div id="voice-overlay" class="voice-overlay hidden">
-                <div class="voice-content">
-                    <div class="voice-pulse"></div>
-                    <h2 id="voice-text">Listening...</h2>
-                    <p class="voice-hint">Try: "Show me Italian in Indiranagar"</p>
-                </div>
-            </div>
 
             <main class="container">
                 <div class="voice-hero-card">
-                    <div class="voice-hero-icon">
-                        <i class="fas fa-microphone"></i>
+                    <div id="feature-voice-trigger" class="voice-hero-icon">
+                        <svg class="mic-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M50 25 C43 25 38 31 38 38 L38 52 C38 59 43 65 50 65 C57 65 62 59 62 52 L62 38 C62 31 57 25 50 25 Z"
+                                fill="none" stroke="white" stroke-width="3.5" />
+                            <path d="M55 30 C53 28 50 28 50 28" fill="none" stroke="white" stroke-width="3.5"
+                                stroke-linecap="round" />
+                            <path d="M32 50 C32 60 40 68 50 68 C60 68 68 60 68 50" fill="none" stroke="white"
+                                stroke-width="3.5" stroke-linecap="round" />
+                            <rect x="47.5" y="68" width="5" height="10" fill="white" />
+                            <rect x="35" y="78" width="30" height="6" rx="3" fill="none" stroke="white"
+                                stroke-width="3.5" />
+                        </svg>
                     </div>
                     <div class="voice-hero-content">
                         <h3>Discover with Voice</h3>
-                        <p>Try saying "Find me some spicy Chinese in Koramangala" or "Romantic dinner spots nearby"</p>
+                        <div id="inline-voice-search" class="inline-voice-container hidden">
+                            <div class="voice-bar">
+                                <div id="voice-transcript-display" class="voice-input-preview">Listening...</div>
+                                <div class="voice-actions">
+                                    <button id="clear-voice-cmd-btn" class="clear-btn hidden" title="Clear">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    <button id="send-voice-cmd-btn" class="send-btn hidden" title="Get Recommendations">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <p id="voice-hero-text">Try saying "Find me some spicy Chinese in Koramangala" or "Romantic
+                            dinner spots nearby"</p>
                     </div>
                 </div>
                 <section class="filter-section">
@@ -105,13 +116,18 @@
                             </select>
                         </div>
                         <div class="filter-group">
+                            <div id="toast-container" class="toast-container"></div>
                             <label>What's your craving?</label>
-                            <div id="selected-cuisines" class="cuisine-selection">
-                                <!-- Tags will be added here -->
-                            </div>
                             <select id="filter-cuisine">
                                 <option value="">+ Add Cuisine</option>
                             </select>
+                            <div id="selected-cuisines" class="cuisine-selection" style="margin-top: 10px;">
+                                <!-- Tags will be added here -->
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-budget">Price range (₹)</label>
+                            <input type="number" id="filter-budget" placeholder="e.g. 1000" min="0" step="100">
                         </div>
                         <div class="filter-group">
                             <label>Minimum Rating: <span id="rating-val">0.0</span></label>
@@ -145,7 +161,6 @@
         </div>
     </div>
 
-    <div id="toast-container" class="toast-container"></div>
     <script src="/static/app.js"></script>
 </body>
 

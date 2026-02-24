@@ -27,6 +27,7 @@ class PreferencePayload(BaseModel):
     location: Optional[str] = ""
     cuisines: Optional[list[str]] = Field(default_factory=list)
     min_rating: Optional[float] = Field(default=0.0, ge=0.0, le=5.0)
+    max_price: Optional[int] = Field(default=None, ge=0)
 
 
 class Restaurant(BaseModel):

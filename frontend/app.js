@@ -9,7 +9,8 @@ const state = {
     locations: [],
     cuisines: [],
     selectedCuisines: [],
-    rating: 0
+    rating: 0,
+    budget: null
 };
 
 // ── DOM Elements ─────────────────────────────────────────────────────────────
@@ -24,13 +25,13 @@ const loginForm = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');
 const logoutBtn = document.getElementById('logout-btn');
 const getRecosBtn = document.getElementById('get-recos-btn');
-const liveTranscript = document.getElementById('live-transcript');
 
 const filterLoc = document.getElementById('filter-location');
 const filterCuisine = document.getElementById('filter-cuisine');
 const selectedCuisinesContainer = document.getElementById('selected-cuisines');
 const filterRating = document.getElementById('filter-rating');
 const ratingVal = document.getElementById('rating-val');
+const filterBudget = document.getElementById('filter-budget');
 
 const resultsGrid = document.getElementById('results-grid');
 const resultsBanners = document.getElementById('results-imagery');
@@ -142,6 +143,10 @@ filterRating.addEventListener('input', (e) => {
     ratingVal.textContent = state.rating.toFixed(1);
 });
 
+filterBudget.addEventListener('input', (e) => {
+    state.budget = e.target.value ? parseInt(e.target.value) : null;
+});
+
 filterCuisine.addEventListener('change', (e) => {
     const val = e.target.value;
     if (val && !state.selectedCuisines.includes(val)) {
@@ -159,8 +164,12 @@ filterCuisine.addEventListener('change', (e) => {
 function renderCuisineTags() {
     selectedCuisinesContainer.innerHTML = state.selectedCuisines.map(c => `
         <div class="cuisine-tag">
-            ${c.charAt(0).toUpperCase() + c.slice(1)}
-            <i class="fas fa-times" onclick="removeCuisineTag('${c}')"></i>
+            <span>${c.charAt(0).toUpperCase() + c.slice(1)}</span>
+            <button class="deselect-cuisine" onclick="removeCuisineTag('${c}')" aria-label="Remove ${c}">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="deselect-svg">
+                    <path d="M30 30 L70 70 M70 30 L30 70" stroke="currentColor" stroke-width="15" stroke-linecap="round" />
+                </svg>
+            </button>
         </div>
     `).join('');
 }
@@ -191,9 +200,12 @@ function showToast(message) {
 
 // ── Voice Transcription ──────────────────────────────────────────────────────
 
-const voiceTrigger = document.getElementById('voice-trigger');
-const voiceOverlay = document.getElementById('voice-overlay');
-const voiceText = document.getElementById('voice-text');
+const voiceTrigger = document.getElementById('feature-voice-trigger');
+const inlineVoiceContainer = document.getElementById('inline-voice-search');
+const voiceTranscriptDisplay = document.getElementById('voice-transcript-display');
+const sendVoiceCmdBtn = document.getElementById('send-voice-cmd-btn');
+const clearVoiceCmdBtn = document.getElementById('clear-voice-cmd-btn');
+const voiceHeroText = document.getElementById('voice-hero-text');
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -202,9 +214,17 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     recognition.interimResults = true;
 
     voiceTrigger.addEventListener('click', () => {
-        voiceOverlay.classList.remove('hidden');
-        voiceText.textContent = "Listening...";
-        recognition.start();
+        if (inlineVoiceContainer.classList.contains('hidden')) {
+            inlineVoiceContainer.classList.remove('hidden');
+            voiceHeroText.classList.add('hidden');
+            voiceTranscriptDisplay.textContent = "Listening...";
+            sendVoiceCmdBtn.classList.add('hidden');
+            clearVoiceCmdBtn.classList.add('hidden');
+            recognition.start();
+            voiceTrigger.classList.add('listening');
+        } else {
+            recognition.stop();
+        }
     });
 
     recognition.onresult = (event) => {
@@ -212,26 +232,42 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             .map(result => result[0])
             .map(result => result.transcript)
             .join('');
-        voiceText.textContent = transcript;
-        if (liveTranscript) {
-            liveTranscript.textContent = transcript;
+        voiceTranscriptDisplay.textContent = transcript;
+
+        if (transcript.length > 0) {
+            sendVoiceCmdBtn.classList.remove('hidden');
+            clearVoiceCmdBtn.classList.remove('hidden');
         }
     };
 
     recognition.onend = () => {
-        setTimeout(() => {
-            voiceOverlay.classList.add('hidden');
-            if (liveTranscript) {
-                liveTranscript.textContent = "";
-            }
-            processVoiceCommand(voiceText.textContent);
-        }, 1500);
+        voiceTrigger.classList.remove('listening');
+        if (!voiceTranscriptDisplay.textContent || voiceTranscriptDisplay.textContent === "Listening...") {
+            inlineVoiceContainer.classList.add('hidden');
+            voiceHeroText.classList.remove('hidden');
+        }
     };
+
+    sendVoiceCmdBtn.addEventListener('click', () => {
+        const cmd = voiceTranscriptDisplay.textContent;
+        inlineVoiceContainer.classList.add('hidden');
+        voiceHeroText.classList.remove('hidden');
+        processVoiceCommand(cmd);
+    });
+
+    clearVoiceCmdBtn.addEventListener('click', () => {
+        voiceTranscriptDisplay.textContent = "Listening...";
+        sendVoiceCmdBtn.classList.add('hidden');
+        clearVoiceCmdBtn.classList.add('hidden');
+    });
 
     recognition.onerror = (event) => {
         console.error("Speech recognition error", event.error);
-        voiceText.textContent = "Error: " + event.error;
-        setTimeout(() => voiceOverlay.classList.add('hidden'), 2000);
+        voiceTranscriptDisplay.textContent = "Error: " + event.error;
+        setTimeout(() => {
+            inlineVoiceContainer.classList.add('hidden');
+            voiceHeroText.classList.remove('hidden');
+        }, 2000);
     };
 }
 
@@ -272,7 +308,8 @@ async function getRecommendations() {
     const payload = {
         location: filterLoc.value,
         cuisines: state.selectedCuisines,
-        min_rating: state.rating
+        min_rating: state.rating,
+        max_price: state.budget
     };
 
     try {
