@@ -61,13 +61,10 @@ def main():
 
     print("\nCleaning...")
     cleaned = clean_zomato_df(df, mapping)
-    print("Cleaned shape:", cleaned.shape)
-    print("\nCleaned sample:")
-    print(cleaned.head())
-    print("\nPrice tier value counts:")
-    vc_str = str(cleaned["price_tier"].value_counts())
-    print(vc_str.encode("utf-8", errors="backslashreplace").decode(sys.stdout.encoding or "utf-8", errors="replace"))
-    print("\nRating range:", cleaned["rating"].min(), "-", cleaned["rating"].max())
+    print(f"Cleaned shape: {cleaned.shape}")
+    
+    # Rating range:
+    print(f"Rating range: {cleaned['rating'].min()} - {cleaned['rating'].max()}")
 
     # Export to data/zomato_cleaned.csv (project root = parent of scripts/)
     project_root = os.path.dirname(SCRIPT_DIR)

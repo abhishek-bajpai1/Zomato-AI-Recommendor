@@ -33,21 +33,10 @@ def _load() -> pd.DataFrame:
 
 def get_locations() -> list[str]:
     df = _load()
-    # Locations in Zomato data are full addresses. 
-    # Let's extract the locality part (usually the word before 'bangalore' or near the end)
-    # A simple way for this dataset is to take the unique set of things after splitting by comma
-    # and looking for common identifiers. For better UX, let's keep it simple: 
-    # Many rows have "..., banashankari, bangalore".
-    all_locs = df["location"].str.lower().str.split(", ")
-    unique_areas = set()
-    for parts in all_locs:
-        # Usually the locality is one of the last few parts before 'bangalore'
-        for p in parts:
-            p = p.strip()
-            if p and p != "bangalore" and not p[0].isdigit():
-                unique_areas.add(p)
-    
-    return sorted(list(unique_areas))
+    # Now that the pipeline correctly maps neighborhood to 'location',
+    # we can just take the unique sorted list.
+    locs = sorted(df["location"].unique().tolist())
+    return [l.title() for l in locs if l]
 
 
 def get_cuisines() -> list[str]:

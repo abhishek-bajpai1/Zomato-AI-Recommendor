@@ -87,7 +87,7 @@ def main():
 def get_preference_mapping(df: "pd.DataFrame") -> dict:
     """Return a dict mapping preference names to dataset column names. Used by Step 2."""
     mapping = {}
-    for key in ("address", "location", "area", "locality", "city", "address line"):
+    for key in ("location", "locality", "area", "address", "city", "address line"):
         cand = [c for c in df.columns if key in c.lower()]
         if cand:
             mapping["Location"] = cand[0]
