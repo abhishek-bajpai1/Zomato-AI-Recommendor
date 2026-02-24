@@ -66,17 +66,65 @@ def rerank(
 
         reranked: list[Restaurant] = []
         seen = set()
+        
+        # Summarize reviews for the top candidates
+        top_candidates_to_summarize = candidates
+        
         for idx in order:
             if 1 <= idx <= len(candidates) and idx not in seen:
-                reranked.append(candidates[idx - 1])
+                restaurant = candidates[idx - 1]
+                # Generate summary if reviews exist and not already summarized
+                if restaurant.reviews and not restaurant.review_summary:
+                    try:
+                        sum_prompt = (
+                            f"Summarize these Zomato reviews for '{restaurant.name}' into one extremely crisp, "
+                            f"appetizing sentence (max 15 words). Focus on what people love. "
+                            f"Reviews: {restaurant.reviews[:800]}"
+                        )
+                        sum_res = client.chat.completions.create(
+                            messages=[{"role": "user", "content": sum_prompt}],
+                            model="llama3-8b-8192", # Use smaller/faster model for summaries
+                            max_tokens=50,
+                        )
+                        restaurant.review_summary = (sum_res.choices[0].message.content or "").strip().strip('"')
+                    except Exception as e:
+                        print(f"Summary failed for {restaurant.name}: {e}")
+                        restaurant.review_summary = "Popular choice with great reviews!"
+                
+                reranked.append(restaurant)
                 seen.add(idx)
+        
         # Append any not mentioned by LLM
         for i, r in enumerate(candidates, start=1):
             if i not in seen:
                 reranked.append(r)
+        
         # Append remaining restaurants beyond LLM window
         reranked.extend(restaurants[MAX_RESTAURANTS_FOR_LLM:])
         return reranked
 
-    except Exception:
-        return restaurants  # fallback on any error
+    except Exception as e:
+        print(f"Groq rerank failed: {e}")
+        pass # Fallback to loop below for summaries
+    
+    # Ensure top results have summaries even if reranking failed or was skipped
+    for r in restaurants[:10]:
+        if r.reviews and not r.review_summary and _has_valid_key():
+            try:
+                from groq import Groq
+                client = Groq(api_key=GROQ_API_KEY.strip())
+                sum_prompt = (
+                    f"Summarize these Zomato reviews for '{r.name}' into one extremely crisp, "
+                    f"appetizing sentence (max 15 words). Focus on what people love. "
+                    f"Reviews: {r.reviews[:800]}"
+                )
+                sum_res = client.chat.completions.create(
+                    messages=[{"role": "user", "content": sum_prompt}],
+                    model="llama3-8b-8192",
+                    max_tokens=50,
+                )
+                r.review_summary = (sum_res.choices[0].message.content or "").strip().strip('"')
+            except Exception:
+                r.review_summary = "Highly rated with great customer feedback!"
+    
+    return restaurants

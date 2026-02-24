@@ -42,6 +42,7 @@ def recommendations(
             cuisine=row["cuisine"],
             price_tier=row["price_tier"],
             rating=float(row["rating"]),
+            reviews=row.get("reviews", ""),
         )
         for _, row in df.iterrows()
     ]

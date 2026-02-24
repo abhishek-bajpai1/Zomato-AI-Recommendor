@@ -218,6 +218,11 @@ function renderResults(restaurants) {
                         <span>${r.rating.toFixed(1)}</span>
                     </div>
                 </div>
+                ${r.review_summary ? `
+                <div class="ai-summary">
+                    <span class="ai-badge">AI Summary</span>
+                    <p>${r.review_summary}</p>
+                </div>` : ''}
                 <div style="margin-top: 12px; font-size: 0.875rem; color: #FFAB40;">
                     ${r.price_tier}
                 </div>

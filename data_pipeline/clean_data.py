@@ -16,6 +16,7 @@ OUT_CUISINE = "cuisine"
 OUT_PRICE_TIER = "price_tier"
 OUT_RATING = "rating"
 OUT_NAME = "name"
+OUT_REVIEWS = "reviews"
 
 VALID_PRICE_TIERS = ("₹", "₹₹", "₹₹₹")
 MIN_RATING = 0.0
@@ -116,6 +117,12 @@ def clean_zomato_df(
     else:
         out[OUT_RATING] = pd.NA
 
+    # Reviews: Truncate to save space
+    if "reviews_list" in df.columns:
+        out[OUT_REVIEWS] = df["reviews_list"].fillna("").astype(str).str[:1000]
+    else:
+        out[OUT_REVIEWS] = ""
+
     # Drop rows missing rating (required for recommendations)
     out = out.dropna(subset=[OUT_RATING])
     # Drop rows where both location and cuisine are empty
@@ -128,4 +135,4 @@ def clean_zomato_df(
     out[OUT_RATING] = out[OUT_RATING].fillna(0.0)
     out[OUT_PRICE_TIER] = out[OUT_PRICE_TIER].fillna("₹₹")
 
-    return out[[OUT_NAME, OUT_LOCATION, OUT_CUISINE, OUT_PRICE_TIER, OUT_RATING]]
+    return out[[OUT_NAME, OUT_LOCATION, OUT_CUISINE, OUT_PRICE_TIER, OUT_RATING, OUT_REVIEWS]]

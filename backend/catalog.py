@@ -25,7 +25,7 @@ def _load() -> pd.DataFrame:
         # Explicit UTF-8 for Windows compatibility with "₹"
         _df = pd.read_csv(_DATA_PATH, encoding="utf-8")
         # Normalise strings
-        for col in ("location", "cuisine", "price_tier", "name"):
+        for col in ("location", "cuisine", "price_tier", "name", "reviews"):
             _df[col] = _df[col].fillna("").astype(str).str.strip()
         _df["rating"] = pd.to_numeric(_df["rating"], errors="coerce").fillna(0.0)
     return _df

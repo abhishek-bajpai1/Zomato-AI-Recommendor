@@ -36,3 +36,5 @@ class Restaurant(BaseModel):
     cuisine: str
     price_tier: str
     rating: float
+    reviews: Optional[str] = ""
+    review_summary: Optional[str] = ""
