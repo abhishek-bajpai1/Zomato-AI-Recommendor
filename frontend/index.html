@@ -1,19 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zomato Recommender | Discover Your Next Favorite Meal</title>
+    <title>Zomato AI Recommendor | Discover Your Next Favorite Meal</title>
     <meta name="description" content="AI-powered restaurant recommendations using Zomato data and Groq LLM.">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body>
+    <div class="wavy-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
     <div id="app">
         <div id="loader" class="screen">
             <div class="spinner"></div>
@@ -24,7 +33,7 @@
             <div class="bg-overlay"></div>
             <div class="login-container">
                 <div class="login-card">
-                    <h1 class="logo">Zomato<span>AI</span></h1>
+                    <h1 class="logo">Zomato AI<span> Recommendor</span></h1>
                     <p class="tagline">Discover restaurants you'll love</p>
                     <form id="login-form">
                         <div class="form-group">
@@ -110,4 +119,5 @@
 
     <script src="/static/app.js"></script>
 </body>
+
 </html>
