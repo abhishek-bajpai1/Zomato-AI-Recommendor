@@ -8,7 +8,7 @@ const state = {
     token: sessionStorage.getItem('zomato_token'),
     locations: [],
     cuisines: [],
-    priceTier: "",
+    selectedCuisines: [],
     rating: 0
 };
 
@@ -27,9 +27,9 @@ const getRecosBtn = document.getElementById('get-recos-btn');
 
 const filterLoc = document.getElementById('filter-location');
 const filterCuisine = document.getElementById('filter-cuisine');
+const selectedCuisinesContainer = document.getElementById('selected-cuisines');
 const filterRating = document.getElementById('filter-rating');
 const ratingVal = document.getElementById('rating-val');
-const priceChips = document.querySelectorAll('.chip');
 
 const resultsGrid = document.getElementById('results-grid');
 const resultsBanners = document.getElementById('results-imagery');
@@ -140,18 +140,99 @@ filterRating.addEventListener('input', (e) => {
     ratingVal.textContent = state.rating.toFixed(1);
 });
 
-priceChips.forEach(chip => {
-    chip.addEventListener('click', () => {
-        if (chip.classList.contains('active')) {
-            chip.classList.remove('active');
-            state.priceTier = "";
-        } else {
-            priceChips.forEach(c => c.classList.remove('active'));
-            chip.classList.add('active');
-            state.priceTier = chip.dataset.value;
+filterCuisine.addEventListener('change', (e) => {
+    const val = e.target.value;
+    if (val && !state.selectedCuisines.includes(val)) {
+        if (state.selectedCuisines.length >= 4) {
+            alert("Maximum 4 cuisines allowed");
+            e.target.value = "";
+            return;
+        }
+        state.selectedCuisines.push(val);
+        renderCuisineTags();
+        e.target.value = "";
+    }
+});
+
+function renderCuisineTags() {
+    selectedCuisinesContainer.innerHTML = state.selectedCuisines.map(c => `
+        <div class="cuisine-tag">
+            ${c.charAt(0).toUpperCase() + c.slice(1)}
+            <i class="fas fa-times" onclick="removeCuisineTag('${c}')"></i>
+        </div>
+    `).join('');
+}
+
+window.removeCuisineTag = (cuisine) => {
+    state.selectedCuisines = state.selectedCuisines.filter(c => c !== cuisine);
+    renderCuisineTags();
+};
+
+// ── Voice Transcription ──────────────────────────────────────────────────────
+
+const voiceTrigger = document.getElementById('voice-trigger');
+const voiceOverlay = document.getElementById('voice-overlay');
+const voiceText = document.getElementById('voice-text');
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    voiceTrigger.addEventListener('click', () => {
+        voiceOverlay.classList.remove('hidden');
+        voiceText.textContent = "Listening...";
+        recognition.start();
+    });
+
+    recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join('');
+        voiceText.textContent = transcript;
+    };
+
+    recognition.onend = () => {
+        setTimeout(() => {
+            voiceOverlay.classList.add('hidden');
+            processVoiceCommand(voiceText.textContent);
+        }, 1500);
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        voiceText.textContent = "Error: " + event.error;
+        setTimeout(() => voiceOverlay.classList.add('hidden'), 2000);
+    };
+}
+
+function processVoiceCommand(cmd) {
+    if (!cmd || cmd.toLowerCase() === "listening..." || cmd.length < 3) return;
+
+    // Simple heuristic-based command parsing
+    const lowerCmd = cmd.toLowerCase();
+
+    // Check for locations
+    state.locations.forEach(loc => {
+        if (lowerCmd.includes(loc.toLowerCase())) {
+            filterLoc.value = loc;
         }
     });
-});
+
+    // Check for cuisines (limit to first matching one if found)
+    state.cuisines.forEach(c => {
+        if (lowerCmd.includes(c.toLowerCase()) && !state.selectedCuisines.includes(c)) {
+            if (state.selectedCuisines.length < 4) {
+                state.selectedCuisines.push(c);
+            }
+        }
+    });
+
+    renderCuisineTags();
+    getRecommendations();
+}
 
 // ── Recommendation Logic ─────────────────────────────────────────────────────
 
@@ -163,8 +244,7 @@ async function getRecommendations() {
 
     const payload = {
         location: filterLoc.value,
-        cuisine: filterCuisine.value,
-        price_tier: state.priceTier,
+        cuisines: state.selectedCuisines,
         min_rating: state.rating
     };
 
@@ -223,8 +303,8 @@ function renderResults(restaurants) {
                     <span class="ai-badge">AI Summary</span>
                     <p>${r.review_summary}</p>
                 </div>` : ''}
-                <div style="margin-top: 12px; font-size: 0.875rem; color: #FFAB40;">
-                    ${r.price_tier}
+                <div style="margin-top: 12px; font-size: 0.875rem; color: #FFFFFF; opacity: 0.9; font-weight: 600;">
+                    Approx. Bill for Two: ₹${r.cost_for_two}
                 </div>
             </div>
         `;

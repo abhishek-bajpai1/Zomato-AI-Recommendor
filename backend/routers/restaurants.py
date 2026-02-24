@@ -30,8 +30,7 @@ def recommendations(
 ):
     df = filter_restaurants(
         location=payload.location or "",
-        cuisine=payload.cuisine or "",
-        price_tier=payload.price_tier or "",
+        cuisines=payload.cuisines or [],
         min_rating=payload.min_rating or 0.0,
     )
 
@@ -40,7 +39,7 @@ def recommendations(
             name=row["name"],
             location=row["location"],
             cuisine=row["cuisine"],
-            price_tier=row["price_tier"],
+            cost_for_two=int(row["cost_for_two"]),
             rating=float(row["rating"]),
             reviews=row.get("reviews", ""),
         )

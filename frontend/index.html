@@ -64,11 +64,23 @@
         <!-- Recommendation Screen -->
         <div id="reco-screen" class="screen hidden">
             <header class="app-header">
-                <div class="container">
+                <div class="container header-content">
                     <h1 class="logo">Zomato AI<span> Recommendor</span></h1>
+                    <div id="voice-trigger" class="voice-btn" title="Speak your command">
+                        <i class="fas fa-microphone"></i>
+                        <span class="btn-glow"></span>
+                    </div>
                     <button id="logout-btn" class="btn btn-outline btn-sm">Logout</button>
                 </div>
             </header>
+
+            <div id="voice-overlay" class="voice-overlay hidden">
+                <div class="voice-content">
+                    <div class="voice-pulse"></div>
+                    <h2 id="voice-text">Listening...</h2>
+                    <p class="voice-hint">Try: "Show me Italian in Indiranagar"</p>
+                </div>
+            </div>
 
             <main class="container">
                 <section class="filter-section">
@@ -81,21 +93,16 @@
                             </select>
                         </div>
                         <div class="filter-group">
-                            <label for="filter-cuisine">Cuisine</label>
+                            <label>What's your craving? (Max 4)</label>
+                            <div id="selected-cuisines" class="cuisine-selection">
+                                <!-- Tags will be added here -->
+                            </div>
                             <select id="filter-cuisine">
-                                <option value="">Any Cuisine</option>
+                                <option value="">+ Add Cuisine</option>
                             </select>
                         </div>
                         <div class="filter-group">
-                            <label>Price Tier</label>
-                            <div class="price-chips">
-                                <button class="chip" data-value="₹">₹</button>
-                                <button class="chip" data-value="₹₹">₹₹</button>
-                                <button class="chip" data-value="₹₹₹">₹₹₹</button>
-                            </div>
-                        </div>
-                        <div class="filter-group">
-                            <label>Min Rating: <span id="rating-val">0.0</span></label>
+                            <label>Minimum Rating: <span id="rating-val">0.0</span></label>
                             <input type="range" id="filter-rating" min="0" max="5" step="0.5" value="0">
                         </div>
                     </div>

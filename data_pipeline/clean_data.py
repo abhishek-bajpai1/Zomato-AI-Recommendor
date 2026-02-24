@@ -13,7 +13,7 @@ import pandas as pd
 # Standard output column names for the recommendation system
 OUT_LOCATION = "location"
 OUT_CUISINE = "cuisine"
-OUT_PRICE_TIER = "price_tier"
+OUT_COST_FOR_TWO = "cost_for_two"
 OUT_RATING = "rating"
 OUT_NAME = "name"
 OUT_REVIEWS = "reviews"
@@ -81,29 +81,14 @@ def clean_zomato_df(
     else:
         out[OUT_CUISINE] = pd.NA
 
-    # Price tier: from cost column or existing price_range
+    # Cost for two: numeric extraction
     if "Price" in mapping:
         col = mapping["Price"]
-        # If column looks numeric, use cost bins; else try to map text to tier
-        if pd.api.types.is_numeric_dtype(df[col]):
-            out[OUT_PRICE_TIER] = df[col].apply(_cost_to_tier)
-        else:
-            # e.g. "1", "2", "3" or "₹", "₹₹"
-            def to_tier(x: Any) -> str:
-                s = str(x).strip()
-                if s in ("1", "₹"):
-                    return "₹"
-                if s in ("2", "₹₹"):
-                    return "₹₹"
-                if s in ("3", "₹₹₹"):
-                    return "₹₹₹"
-                try:
-                    return _cost_to_tier(float(s))
-                except (TypeError, ValueError):
-                    return "₹₹"
-            out[OUT_PRICE_TIER] = df[col].apply(to_tier)
+        # Convert to string first to handle comma in "1,200"
+        cost_series = df[col].astype(str).str.replace(",", "").str.extract(r"(\d+)")[0]
+        out[OUT_COST_FOR_TWO] = pd.to_numeric(cost_series, errors="coerce").fillna(500).astype(int)
     else:
-        out[OUT_PRICE_TIER] = "₹₹"
+        out[OUT_COST_FOR_TWO] = 500
 
     # Rating: coerce to float, clamp to [MIN_RATING, MAX_RATING]
     # The Zomato dataset stores ratings as "4.1/5" – strip "/5" and non-numeric text first.
@@ -133,6 +118,6 @@ def clean_zomato_df(
 
     # Ensure rating nulls filled for remaining rows (should be rare)
     out[OUT_RATING] = out[OUT_RATING].fillna(0.0)
-    out[OUT_PRICE_TIER] = out[OUT_PRICE_TIER].fillna("₹₹")
+    out[OUT_COST_FOR_TWO] = out[OUT_COST_FOR_TWO].fillna(500)
 
-    return out[[OUT_NAME, OUT_LOCATION, OUT_CUISINE, OUT_PRICE_TIER, OUT_RATING, OUT_REVIEWS]]
+    return out[[OUT_NAME, OUT_LOCATION, OUT_CUISINE, OUT_COST_FOR_TWO, OUT_RATING, OUT_REVIEWS]]

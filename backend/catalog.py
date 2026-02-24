@@ -25,9 +25,10 @@ def _load() -> pd.DataFrame:
         # Explicit UTF-8 for Windows compatibility with "₹"
         _df = pd.read_csv(_DATA_PATH, encoding="utf-8")
         # Normalise strings
-        for col in ("location", "cuisine", "price_tier", "name", "reviews"):
+        for col in ("location", "cuisine", "name", "reviews"):
             _df[col] = _df[col].fillna("").astype(str).str.strip()
         _df["rating"] = pd.to_numeric(_df["rating"], errors="coerce").fillna(0.0)
+        _df["cost_for_two"] = pd.to_numeric(_df["cost_for_two"], errors="coerce").fillna(500).astype(int)
     return _df
 
 
@@ -51,8 +52,7 @@ def get_cuisines() -> list[str]:
 
 def filter_restaurants(
     location: str,
-    cuisine: str,
-    price_tier: str,
+    cuisines: list[str],
     min_rating: float,
     limit: int = 50,
 ) -> pd.DataFrame:
@@ -61,11 +61,13 @@ def filter_restaurants(
     if location and location.strip():
         df = df[df["location"].str.contains(location.strip().lower(), case=False, na=False)]
 
-    if cuisine and cuisine.strip():
-        df = df[df["cuisine"].str.contains(cuisine.strip().lower(), case=False, na=False)]
-
-    if price_tier and price_tier.strip():
-        df = df[df["price_tier"] == price_tier.strip()]
+    if cuisines:
+        # Filter for any of the selected cuisines
+        mask = pd.Series(False, index=df.index)
+        for c in cuisines:
+            if c.strip():
+                mask |= df["cuisine"].str.contains(c.strip().lower(), case=False, na=False)
+        df = df[mask]
 
     if min_rating and min_rating > 0:
         df = df[df["rating"] >= min_rating]

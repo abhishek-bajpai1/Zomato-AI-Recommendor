@@ -12,6 +12,10 @@ Kaggle API (for local runs):
 
 import os
 import sys
+import csv
+
+# Increase field size limit for large reviews in Zomato dataset
+csv.field_size_limit(10**6)
 
 # Optional: use pathlib for path handling
 try:
@@ -55,7 +59,7 @@ def load_via_download():
     path = csv_files[0]
     if len(csv_files) > 1:
         print(f"Multiple CSVs found; using: {path}", file=sys.stderr)
-    return pd.read_csv(path)
+    return pd.read_csv(path, engine='python', on_bad_lines='skip', nrows=10000)
 
 
 def main():

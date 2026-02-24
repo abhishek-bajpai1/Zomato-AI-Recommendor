@@ -25,8 +25,7 @@ class Token(BaseModel):
 
 class PreferencePayload(BaseModel):
     location: Optional[str] = ""
-    cuisine: Optional[str] = ""
-    price_tier: Optional[str] = ""       # "", "₹", "₹₹", "₹₹₹"
+    cuisines: Optional[list[str]] = Field(default_factory=list)
     min_rating: Optional[float] = Field(default=0.0, ge=0.0, le=5.0)
 
 
@@ -34,7 +33,7 @@ class Restaurant(BaseModel):
     name: str
     location: str
     cuisine: str
-    price_tier: str
+    cost_for_two: int
     rating: float
     reviews: Optional[str] = ""
     review_summary: Optional[str] = ""
