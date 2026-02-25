@@ -203,7 +203,6 @@ function showToast(message) {
 const voiceTrigger = document.getElementById('feature-voice-trigger');
 const inlineVoiceContainer = document.getElementById('inline-voice-search');
 const voiceTranscriptDisplay = document.getElementById('voice-transcript-display');
-const sendVoiceCmdBtn = document.getElementById('send-voice-cmd-btn');
 const clearVoiceCmdBtn = document.getElementById('clear-voice-cmd-btn');
 const voiceHeroText = document.getElementById('voice-hero-text');
 
@@ -218,7 +217,6 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             inlineVoiceContainer.classList.remove('hidden');
             voiceHeroText.classList.add('hidden');
             voiceTranscriptDisplay.textContent = "Listening...";
-            sendVoiceCmdBtn.classList.add('hidden');
             clearVoiceCmdBtn.classList.add('hidden');
             recognition.start();
             voiceTrigger.classList.add('listening');
@@ -235,29 +233,32 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         voiceTranscriptDisplay.textContent = transcript;
 
         if (transcript.length > 0) {
-            sendVoiceCmdBtn.classList.remove('hidden');
             clearVoiceCmdBtn.classList.remove('hidden');
         }
     };
 
     recognition.onend = () => {
         voiceTrigger.classList.remove('listening');
-        if (!voiceTranscriptDisplay.textContent || voiceTranscriptDisplay.textContent === "Listening...") {
+        const transcript = voiceTranscriptDisplay.textContent;
+
+        if (!transcript || transcript === "Listening...") {
             inlineVoiceContainer.classList.add('hidden');
             voiceHeroText.classList.remove('hidden');
+        } else {
+            // Automatically process after a short delay for UX
+            setTimeout(() => {
+                // Double check it hasn't been cleared/canceled
+                if (!inlineVoiceContainer.classList.contains('hidden') && voiceTranscriptDisplay.textContent !== "Listening...") {
+                    inlineVoiceContainer.classList.add('hidden');
+                    voiceHeroText.classList.remove('hidden');
+                    processVoiceCommand(transcript);
+                }
+            }, 1000);
         }
     };
 
-    sendVoiceCmdBtn.addEventListener('click', () => {
-        const cmd = voiceTranscriptDisplay.textContent;
-        inlineVoiceContainer.classList.add('hidden');
-        voiceHeroText.classList.remove('hidden');
-        processVoiceCommand(cmd);
-    });
-
     clearVoiceCmdBtn.addEventListener('click', () => {
         voiceTranscriptDisplay.textContent = "Listening...";
-        sendVoiceCmdBtn.classList.add('hidden');
         clearVoiceCmdBtn.classList.add('hidden');
     });
 

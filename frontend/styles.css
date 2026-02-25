@@ -671,23 +671,30 @@ h3,
 }
 
 .clear-btn {
-    width: 32px;
-    height: 32px;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-muted);
-    border: 1px solid var(--border-glass);
+    width: 24px;
+    height: 24px;
+    background: #FF0000;
+    /* Red from reference */
+    color: white;
+    border: none;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: var(--transition);
+    padding: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .clear-btn:hover {
-    background: rgba(255, 82, 82, 0.2);
-    color: var(--primary);
-    border-color: var(--primary);
+    background: #D30000;
+    transform: scale(1.1) rotate(90deg);
+}
+
+.clear-btn .deselect-svg {
+    width: 12px;
+    height: 12px;
 }
 
 .voice-hero-icon.listening {
