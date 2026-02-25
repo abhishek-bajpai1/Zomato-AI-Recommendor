@@ -1,5 +1,6 @@
 """
 Restaurant catalog: loads data/zomato_cleaned.csv and provides filter helpers.
+Uses robust path resolution for Vercel serverless (cwd may differ from __file__).
 """
 
 from __future__ import annotations
@@ -9,7 +10,18 @@ from typing import Optional
 
 import pandas as pd
 
-_DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "zomato_cleaned.csv"
+def _resolve_data_path() -> Path:
+    """Resolve path to zomato_cleaned.csv - works on local dev and Vercel serverless."""
+    candidates = [
+        Path(__file__).resolve().parent.parent / "data" / "zomato_cleaned.csv",
+        Path.cwd() / "data" / "zomato_cleaned.csv",
+        Path.cwd() / ".." / "data" / "zomato_cleaned.csv",
+    ]
+    for p in candidates:
+        if p.resolve().exists():
+            return p.resolve()
+    return candidates[0]  # Return primary path for clearer error messages
+
 
 _df: Optional[pd.DataFrame] = None
 
@@ -17,13 +29,14 @@ _df: Optional[pd.DataFrame] = None
 def _load() -> pd.DataFrame:
     global _df
     if _df is None:
-        if not _DATA_PATH.exists():
+        _path = _resolve_data_path()
+        if not _path.exists():
             raise FileNotFoundError(
-                f"Cleaned data not found at {_DATA_PATH}. "
+                f"Cleaned data not found at {_path}. "
                 "Run: python data_pipeline/explore_and_clean_data.py"
             )
         # Explicit UTF-8 for Windows compatibility with "₹"
-        _df = pd.read_csv(_DATA_PATH, encoding="utf-8")
+        _df = pd.read_csv(_path, encoding="utf-8")
         # Normalise strings
         for col in ("location", "cuisine", "name", "reviews"):
             _df[col] = _df[col].fillna("").astype(str).str.strip()

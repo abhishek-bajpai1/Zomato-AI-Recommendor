@@ -6,8 +6,9 @@ Run from project root:
 
 from __future__ import annotations
 import os
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,6 +36,14 @@ app.add_middleware(
 
 app.include_router(auth_router.router)
 app.include_router(restaurants_router.router)
+
+
+@app.exception_handler(FileNotFoundError)
+async def file_not_found_handler(_request: Request, exc: FileNotFoundError):
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Data file unavailable. Please try again later.", "error": str(exc)},
+    )
 
 
 @app.get("/health")
