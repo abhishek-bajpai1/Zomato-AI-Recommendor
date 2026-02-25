@@ -2,7 +2,7 @@
  * Zomato Recommender - Main Application Logic
  */
 
-const API_BASE = ""; // Backend and frontend are on same origin
+const API_BASE = "/api"; // Backend and frontend are on same origin
 
 const state = {
     token: sessionStorage.getItem('zomato_token'),

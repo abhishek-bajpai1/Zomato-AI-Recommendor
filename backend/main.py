@@ -34,8 +34,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router.router)
-app.include_router(restaurants_router.router)
+app.include_router(auth_router.router, prefix="/api")
+app.include_router(restaurants_router.router, prefix="/api")
 
 
 @app.exception_handler(FileNotFoundError)
