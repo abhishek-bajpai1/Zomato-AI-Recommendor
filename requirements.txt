@@ -1,21 +1,18 @@
 # AI Restaurant Recommendation System
-# Install: pip install -r requirements.txt
-
-# Data pipeline (Steps 1-2)
-kagglehub[pandas-datasets]
+# Core
 pandas>=2.0.0
-pytest>=7.0.0
 python-dotenv>=1.0.0
 groq>=0.4.0
 
-# Backend API (Steps 3-4)
+# Backend API
 fastapi>=0.110.0
-uvicorn[standard]>=0.29.0
+uvicorn>=0.29.0
 python-jose[cryptography]>=3.3.0
 passlib[bcrypt]>=1.7.4
 bcrypt<4.0.0
 python-multipart>=0.0.9
 httpx>=0.23.0
+email-validator>=2.0.0
 
-# Streamlit app
-streamlit>=1.28.0
+# Note: Streamlit is not used in Vercel deployment
+# streamlit>=1.28.0
