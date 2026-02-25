@@ -12,13 +12,18 @@ import pandas as pd
 
 def _resolve_data_path() -> Path:
     """Resolve path to zomato_cleaned.csv - works on local dev and Vercel serverless."""
-    # Priority 1: Relative to this file (likely when running as a module)
+    # Priority 1: Relative to this file
     base_dir = Path(__file__).resolve().parent.parent
     p = base_dir / "data" / "zomato_cleaned.csv"
     if p.exists():
         return p
 
-    # Priority 2: Relative to current working directory (Vercel often sets this to project root)
+    # Priority 2: Hardcoded relative path (vulnerable but works in some serverless envs)
+    p = Path("data/zomato_cleaned.csv")
+    if p.exists():
+        return p.absolute()
+
+    # Priority 3: Relative to current working directory
     p = Path.cwd() / "data" / "zomato_cleaned.csv"
     if p.exists():
         return p
